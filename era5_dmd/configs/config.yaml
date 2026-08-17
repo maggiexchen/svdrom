@@ -1,0 +1,45 @@
+# Configuration for the ERA5 DMD pipeline (run.py).
+
+dask:
+  threads_per_worker: 1
+  memory_limit: 3GB
+  local_directory: /data/tmp/
+
+data:
+  variable_path: /data/data_maggie/era5_regridded_1deg/top_net_thermal_radiation_24h_acc/data
+  # Generic filename filter, independent of year - leave as-is unless the
+  # data folder mixes in non-data files.
+  file_pattern: "*.nc"
+  # Years to load (inclusive range). Leave both null to load every file
+  # matching file_pattern. Set `years` instead for a non-contiguous list,
+  # e.g. years: [2005, 2010, 2015], which takes precedence over the range.
+  start_year: 1979
+  end_year: 2020
+  years: null
+  # Set to an integer to resample to that many hours between snapshots
+  # before standardising. Leave null to keep the native resolution.
+  resample_hours: null
+
+svd:
+  n_components: 40
+  n_power_iter: 2
+  n_oversamples: 15
+
+dmd:
+  n_modes: 16
+  time_units: h
+
+output:
+  output_dir: /data/maggie/dmd_results/ttr_24hr_1979-2020/
+  # Leave null to name the file after the number of fitted DMD modes, e.g.
+  # "optdmd_10_modes.pkl".
+  dmd_filename: null
+  # Name of the NetCDF file the reconstruction RMSE (computed against the
+  # true data right after the DMD fit) is written to, inside output_dir.
+  rmse_filename: reconstruction_rmse.nc
+  # If True, save the boolean NaN/land mask (the samples stack_spatial_dims
+  # drops before fitting) to mask_filename inside output_dir, so it can
+  # later be used (e.g. by mode_forcing_field.py) to reinsert NaNs at those
+  # grid points instead of leaving them out of the output grid entirely.
+  save_mask: true
+  mask_filename: nan_mask.nc
